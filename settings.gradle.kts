@@ -16,4 +16,5 @@ dependencyResolutionManagement {
 rootProject.name = "BookFinder"
 include(":app")
 include(":core")
+include(":data")
  
