@@ -3,7 +3,7 @@ package com.ho8278.data.inject
 import com.ho8278.core.retrofit.SerializerConverterFactory
 import com.ho8278.core.serialize.Serializer
 import com.ho8278.data.remote.NetworkConstant
-import com.ho8278.data.remote.service.MarbleService
+import com.ho8278.data.remote.service.ImageSearchService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +26,7 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideMarbleService(retrofit: Retrofit): MarbleService {
-        return retrofit.create(MarbleService::class.java)
+    fun provideMarbleService(retrofit: Retrofit): ImageSearchService {
+        return retrofit.create(ImageSearchService::class.java)
     }
 }

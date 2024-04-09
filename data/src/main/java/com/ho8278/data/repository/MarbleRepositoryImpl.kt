@@ -6,14 +6,14 @@ import com.ho8278.data.model.Card
 import com.ho8278.data.model.Favorites
 import com.ho8278.data.model.SearchResult
 import com.ho8278.data.remote.model.toUrl
-import com.ho8278.data.remote.service.MarbleService
+import com.ho8278.data.remote.service.ImageSearchService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onStart
 import java.security.MessageDigest
 
 class MarbleRepositoryImpl(
-    private val marbleService: MarbleService,
+    private val imageSearchService: ImageSearchService,
     private val favoritePref: FavoritePref,
 ) : MarbleRepository {
 
@@ -24,7 +24,7 @@ class MarbleRepositoryImpl(
 
         val timestamp = System.currentTimeMillis()
         val hash = getHash(timestamp)
-        val characterResult = marbleService.getCharacters(nameStartsWith, hash, timestamp, offset)
+        val characterResult = imageSearchService.searchImages(nameStartsWith, hash, timestamp, offset)
         val resultTotal = characterResult.data?.total ?: 0
         val resultOffset = characterResult.data?.offset ?: 0
         val characters = characterResult.data?.results.orEmpty()

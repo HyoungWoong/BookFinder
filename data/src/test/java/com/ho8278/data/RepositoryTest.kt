@@ -6,7 +6,7 @@ import com.ho8278.core.serialize.MoshiSerializer
 import com.ho8278.data.local.FavoritePref
 import com.ho8278.data.model.Card
 import com.ho8278.data.remote.NetworkConstant
-import com.ho8278.data.remote.service.MarbleService
+import com.ho8278.data.remote.service.ImageSearchService
 import com.ho8278.data.repository.MarbleRepository
 import com.ho8278.data.repository.MarbleRepositoryImpl
 import com.squareup.moshi.Moshi
@@ -37,7 +37,7 @@ class RepositoryTest {
             .client(okhttp)
             .build()
 
-        val service = retrofit.create(MarbleService::class.java)
+        val service = retrofit.create(ImageSearchService::class.java)
 
         val favoritePref = FavoritePref(MemoryPreference())
 

@@ -7,7 +7,7 @@ import com.ho8278.core.pref.Preference
 import com.ho8278.core.serialize.MoshiSerializer
 import com.ho8278.core.serialize.Serializer
 import com.ho8278.data.local.FavoritePref
-import com.ho8278.data.remote.service.MarbleService
+import com.ho8278.data.remote.service.ImageSearchService
 import com.ho8278.data.repository.MarbleRepository
 import com.ho8278.data.repository.MarbleRepositoryImpl
 import com.ho8278.data.repository.TabRepository
@@ -42,10 +42,10 @@ class DataModule {
     @Provides
     @Singleton
     fun provideMarbleRepository(
-        marbleService: MarbleService,
+        imageSearchService: ImageSearchService,
         favoritePref: FavoritePref
     ): MarbleRepository {
-        return MarbleRepositoryImpl(marbleService, favoritePref)
+        return MarbleRepositoryImpl(imageSearchService, favoritePref)
     }
 
     @Provides

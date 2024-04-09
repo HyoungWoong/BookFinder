@@ -3,7 +3,7 @@ package com.ho8278.data
 import com.ho8278.core.retrofit.SerializerConverterFactory
 import com.ho8278.core.serialize.MoshiSerializer
 import com.ho8278.data.remote.NetworkConstant
-import com.ho8278.data.remote.service.MarbleService
+import com.ho8278.data.remote.service.ImageSearchService
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -14,7 +14,7 @@ import retrofit2.Retrofit
 import java.security.MessageDigest
 
 class RemoteTest {
-    lateinit var service: MarbleService
+    lateinit var service: ImageSearchService
 
     @Before
     fun setup() {
@@ -34,7 +34,7 @@ class RemoteTest {
             .client(okhttp)
             .build()
 
-        service = retrofit.create(MarbleService::class.java)
+        service = retrofit.create(ImageSearchService::class.java)
     }
 
     @Test
@@ -44,7 +44,7 @@ class RemoteTest {
         val hash = MessageDigest.getInstance("MD5").digest(input.toByteArray())
             .joinToString("") { "%02x".format(it) }
 
-        val result = service.getCharacters("iron", hash = hash, ts = timestamp)
+        val result = service.searchImages("iron", hash = hash, ts = timestamp)
 
         println(result)
 
