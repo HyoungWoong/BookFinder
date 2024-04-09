@@ -11,7 +11,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
-import java.security.MessageDigest
 
 class RemoteTest {
     lateinit var service: ImageSearchService
@@ -26,6 +25,14 @@ class RemoteTest {
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
+            .addInterceptor {
+                val request = it.request()
+                    .newBuilder()
+                    .header(NetworkConstant.AUTHORIZATION_HEADER, BuildConfig.API_KEY)
+                    .build()
+
+                it.proceed(request)
+            }
             .build()
 
         val retrofit = Retrofit.Builder()
@@ -39,15 +46,11 @@ class RemoteTest {
 
     @Test
     fun `API 가 정상적으로 호출된다`(): Unit = runBlocking {
-        val timestamp = System.currentTimeMillis()
-        val input = "$timestamp${BuildConfig.PRIVATE_KEY}${BuildConfig.API_KEY}"
-        val hash = MessageDigest.getInstance("MD5").digest(input.toByteArray())
-            .joinToString("") { "%02x".format(it) }
-
-        val result = service.searchImages("iron", hash = hash, ts = timestamp)
+        val result = service.searchImages("iron")
 
         println(result)
 
-        assert(result.data != null)
+        assert(result.meta.totalCount != 0)
+        assert(result.documents.isNotEmpty())
     }
 }
