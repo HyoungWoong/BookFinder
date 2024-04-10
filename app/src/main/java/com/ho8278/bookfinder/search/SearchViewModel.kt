@@ -67,9 +67,12 @@ class SearchViewModel @Inject constructor(
 
     fun loadMore() {
         viewModelScope.launch {
+            val isNullValue = searchResult.value == null
             val isLoadAll = searchResult.value?.isEnd ?: true
+            val isQueryEmpty = searchText.value.isEmpty()
+            val isLoading = isLoadingLocal.value
 
-            if (searchText.value.isEmpty() || isLoadingLocal.value || isLoadAll) {
+            if (isNullValue || isLoadAll || isQueryEmpty || isLoading) {
                 return@launch
             }
 
