@@ -8,6 +8,8 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ho8278.bookfinder.R
 import com.ho8278.bookfinder.databinding.ActivityMainBinding
+import com.ho8278.bookfinder.favorite.FavoriteFragment
+import com.ho8278.bookfinder.search.SearchFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
