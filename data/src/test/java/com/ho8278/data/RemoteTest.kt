@@ -28,7 +28,10 @@ class RemoteTest {
             .addInterceptor {
                 val request = it.request()
                     .newBuilder()
-                    .header(NetworkConstant.AUTHORIZATION_HEADER, BuildConfig.API_KEY)
+                    .header(
+                        NetworkConstant.AUTHORIZATION_HEADER,
+                        NetworkConstant.AUTHORIZATION_PREFIX + BuildConfig.API_KEY
+                    )
                     .build()
 
                 it.proceed(request)

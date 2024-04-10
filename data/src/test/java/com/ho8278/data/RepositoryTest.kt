@@ -30,6 +30,17 @@ class RepositoryTest {
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
+            .addInterceptor {
+                val request = it.request()
+                    .newBuilder()
+                    .header(
+                        NetworkConstant.AUTHORIZATION_HEADER,
+                        NetworkConstant.AUTHORIZATION_PREFIX + BuildConfig.API_KEY
+                    )
+                    .build()
+
+                it.proceed(request)
+            }
             .build()
         val retrofit = Retrofit.Builder()
             .baseUrl(NetworkConstant.ENDPOINT)
@@ -46,42 +57,44 @@ class RepositoryTest {
 
     @Test
     fun `검색 쿼리로 마블 캐릭터를 검색할 수 있다`(): Unit = runBlocking {
-        val searchResult = repository.searchImages("iron", 0)
+        val searchResult = repository.searchImages("iron", 1)
 
         assert(searchResult.total != 0)
-        assert(searchResult.results.size == 10)
+        assert(searchResult.results.isNotEmpty())
     }
 
     @Test
     fun `현재 저장된 favorite 을 저장하고 가져올 수 있다`(): Unit = runBlocking {
-        repository.setFavorite(Image(1,"","",""))
-        repository.setFavorite(Image(3,"","",""))
-        repository.setFavorite(Image(5,"","",""))
-        repository.setFavorite(Image(6,"","",""))
-        repository.setFavorite(Image(6,"","",""))
+        repository.setFavorite(Image("https://test.test.com"))
+        repository.setFavorite(Image("https://test1.test.com"))
+        repository.setFavorite(Image("https://test2.test.com"))
+        repository.setFavorite(Image("https://test3.test.com"))
+        repository.setFavorite(Image("https://test4.test.com"))
 
         val favoriteIds = repository.getFavorites()
 
-        assert(favoriteIds[0] == Image(1,"","",""))
-        assert(favoriteIds[1] == Image(3,"","",""))
-        assert(favoriteIds[2] == Image(5,"","",""))
-        assert(favoriteIds[3] == Image(6,"","",""))
+        assert(favoriteIds[0] == Image("https://test.test.com"))
+        assert(favoriteIds[1] == Image("https://test1.test.com"))
+        assert(favoriteIds[2] == Image("https://test2.test.com"))
+        assert(favoriteIds[3] == Image("https://test3.test.com"))
+        assert(favoriteIds[4] == Image("https://test4.test.com"))
     }
 
     @Test
     fun `현재 저장된 favorite 을 삭제할 수 있다`(): Unit = runBlocking {
-        repository.setFavorite(Image(1,"","",""))
-        repository.setFavorite(Image(3,"","",""))
-        repository.setFavorite(Image(5,"","",""))
-        repository.setFavorite(Image(6,"","",""))
-        repository.setFavorite(Image(6,"","",""))
+        repository.setFavorite(Image("https://test.test.com"))
+        repository.setFavorite(Image("https://test1.test.com"))
+        repository.setFavorite(Image("https://test2.test.com"))
+        repository.setFavorite(Image("https://test3.test.com"))
+        repository.setFavorite(Image("https://test4.test.com"))
 
-        repository.removeFavorite(1)
+        repository.removeFavorite(Image("https://test2.test.com"))
 
         val favoriteIds = repository.getFavorites()
 
-        assert(favoriteIds[0] == Image(3,"","",""))
-        assert(favoriteIds[1] == Image(5,"","",""))
-        assert(favoriteIds[2] == Image(6,"","",""))
+        assert(favoriteIds[0] == Image("https://test.test.com"))
+        assert(favoriteIds[1] == Image("https://test1.test.com"))
+        assert(favoriteIds[2] == Image("https://test3.test.com"))
+        assert(favoriteIds[3] == Image("https://test4.test.com"))
     }
 }
