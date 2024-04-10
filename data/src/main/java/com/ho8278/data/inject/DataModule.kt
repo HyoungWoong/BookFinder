@@ -26,21 +26,6 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideSerializer(): Serializer {
-        return MoshiSerializer(Moshi.Builder().build())
-    }
-
-    @Provides
-    @Singleton
-    fun providePreference(
-        @ApplicationContext context: Context,
-        serializer: Serializer
-    ): Preference {
-        return CachePreference(DiskPreference(context, serializer))
-    }
-
-    @Provides
-    @Singleton
     fun provideMarbleRepository(
         imageSearchService: ImageSearchService,
         favoritePref: FavoritePref
