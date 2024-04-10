@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ho8278.bookfinder.common.ItemHolder
 import com.ho8278.core.error.stable
+import com.ho8278.data.model.Image
 import com.ho8278.data.model.SearchResult
 import com.ho8278.data.repository.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -77,7 +78,9 @@ class SearchViewModel @Inject constructor(
             val currentResult = searchResult.value!!
 
             val nextPage = currentResult.page + 1
-            val nextResult = imageRepository.searchImages(searchText.value, nextPage)
+            val nextResult = withContext(Dispatchers.IO) {
+                imageRepository.searchImages(searchText.value, nextPage)
+            }
 
             val loadMoreList = currentResult.results + nextResult.results
             val loadMoreResult = SearchResult(
@@ -92,17 +95,15 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun onCardClick(card: Card) {
-        viewModelScope.launch {
-            val currentFavorite = withContext(Dispatchers.IO) {
-                imageRepository.getFavorites()
-            }
+    fun addFavorite(image: Image) {
+        viewModelScope.launch(Dispatchers.IO) {
+            imageRepository.setFavorite(image)
+        }
+    }
 
-            if (currentFavorite.contains(card)) {
-                imageRepository.removeFavorite(card.characterId)
-            } else {
-                imageRepository.setFavorite(card)
-            }
+    fun removeFavorite(image: Image) {
+        viewModelScope.launch(Dispatchers.IO) {
+            imageRepository.removeFavorite(image)
         }
     }
 
