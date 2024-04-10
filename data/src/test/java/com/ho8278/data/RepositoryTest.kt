@@ -7,8 +7,8 @@ import com.ho8278.data.local.FavoritePref
 import com.ho8278.data.model.Image
 import com.ho8278.data.remote.NetworkConstant
 import com.ho8278.data.remote.service.ImageSearchService
-import com.ho8278.data.repository.MarbleRepository
-import com.ho8278.data.repository.MarbleRepositoryImpl
+import com.ho8278.data.repository.ImageRepository
+import com.ho8278.data.repository.ImageRepositoryImpl
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -19,7 +19,7 @@ import retrofit2.Retrofit
 
 class RepositoryTest {
 
-    lateinit var repository: MarbleRepository
+    lateinit var repository: ImageRepository
 
     @Before
     fun setup() {
@@ -41,12 +41,12 @@ class RepositoryTest {
 
         val favoritePref = FavoritePref(MemoryPreference())
 
-        repository = MarbleRepositoryImpl(service, favoritePref)
+        repository = ImageRepositoryImpl(service, favoritePref)
     }
 
     @Test
     fun `검색 쿼리로 마블 캐릭터를 검색할 수 있다`(): Unit = runBlocking {
-        val searchResult = repository.search("iron", 0)
+        val searchResult = repository.searchImages("iron", 0)
 
         assert(searchResult.total != 0)
         assert(searchResult.results.size == 10)

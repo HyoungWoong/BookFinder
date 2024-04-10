@@ -8,8 +8,8 @@ import com.ho8278.core.serialize.MoshiSerializer
 import com.ho8278.core.serialize.Serializer
 import com.ho8278.data.local.FavoritePref
 import com.ho8278.data.remote.service.ImageSearchService
-import com.ho8278.data.repository.MarbleRepository
-import com.ho8278.data.repository.MarbleRepositoryImpl
+import com.ho8278.data.repository.ImageRepository
+import com.ho8278.data.repository.ImageRepositoryImpl
 import com.ho8278.data.repository.TabRepository
 import com.ho8278.data.repository.TabRepositoryImpl
 import com.squareup.moshi.Moshi
@@ -44,8 +44,8 @@ class DataModule {
     fun provideMarbleRepository(
         imageSearchService: ImageSearchService,
         favoritePref: FavoritePref
-    ): MarbleRepository {
-        return MarbleRepositoryImpl(imageSearchService, favoritePref)
+    ): ImageRepository {
+        return ImageRepositoryImpl(imageSearchService, favoritePref)
     }
 
     @Provides
