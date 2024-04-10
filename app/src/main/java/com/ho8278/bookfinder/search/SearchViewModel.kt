@@ -2,6 +2,7 @@ package com.ho8278.bookfinder.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ho8278.bookfinder.common.ItemHolder
 import com.ho8278.core.error.stable
 import com.ho8278.data.model.SearchResult
 import com.ho8278.data.repository.ImageRepository
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val marbleRepository: ImageRepository
+    private val imageRepository: ImageRepository
 ) : ViewModel() {
 
     private var isInitialize = false
@@ -28,7 +29,7 @@ class SearchViewModel @Inject constructor(
     private val searchText = MutableStateFlow("")
 
     val itemList: Flow<List<ItemHolder>> = searchResult.combine(
-        marbleRepository.favoriteChanges()
+        imageRepository.favoriteChanges()
     ) { search, favorites ->
         search?.results?.map {
             val isFavorite = favorites.contains(it)
@@ -45,10 +46,10 @@ class SearchViewModel @Inject constructor(
 
         viewModelScope.launch {
             searchText
-                .filter { it.length >= 2 }
+                .debounce(DEBOUNCE_TIMEOUT)
                 .mapLatest {
                     isLoadingLocal.emit(true)
-                    val result = marbleRepository.search(it, 0)
+                    val result = imageRepository.searchImages(it, DEFAULT_QUERY_PAGE)
                     isLoadingLocal.emit(false)
                     result
                 }
@@ -65,24 +66,28 @@ class SearchViewModel @Inject constructor(
 
     fun loadMore() {
         viewModelScope.launch {
-            if (searchResult.value == null) return@launch
+            val isLoadAll = searchResult.value?.isEnd ?: true
 
-            val isLoadAll = searchResult.value!!.total <= searchResult.value!!.offset + OFFSET_COUNT
             if (searchText.value.isEmpty() || isLoadingLocal.value || isLoadAll) {
                 return@launch
             }
 
             isLoadingLocal.emit(true)
 
-            val nextOffset = searchResult.value!!.offset + OFFSET_COUNT
-            val loadResult = marbleRepository.search(searchText.value, nextOffset)
+            val currentResult = searchResult.value!!
 
-            val addedCardList =
-                (searchResult.value!!.results + loadResult.results).distinctBy { it.characterId }
+            val nextPage = currentResult.page + 1
+            val nextResult = imageRepository.searchImages(searchText.value, nextPage)
 
-            val newSearchResult = SearchResult(loadResult.total, loadResult.offset, addedCardList)
-            searchResult.emit(newSearchResult)
+            val loadMoreList = currentResult.results + nextResult.results
+            val loadMoreResult = SearchResult(
+                nextResult.total,
+                nextResult.isEnd,
+                nextResult.page,
+                loadMoreList
+            )
 
+            searchResult.emit(loadMoreResult)
             isLoadingLocal.emit(false)
         }
     }
@@ -90,18 +95,19 @@ class SearchViewModel @Inject constructor(
     fun onCardClick(card: Card) {
         viewModelScope.launch {
             val currentFavorite = withContext(Dispatchers.IO) {
-                marbleRepository.getFavorites()
+                imageRepository.getFavorites()
             }
 
             if (currentFavorite.contains(card)) {
-                marbleRepository.removeFavorite(card.characterId)
+                imageRepository.removeFavorite(card.characterId)
             } else {
-                marbleRepository.setFavorite(card)
+                imageRepository.setFavorite(card)
             }
         }
     }
 
     companion object {
-        private const val OFFSET_COUNT = 10
+        private const val DEFAULT_QUERY_PAGE = 1
+        private const val DEBOUNCE_TIMEOUT = 1000L
     }
 }
