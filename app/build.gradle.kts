@@ -75,6 +75,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     kapt("com.google.dagger:hilt-android-compiler:2.51")
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     implementation(project(":data"))
     implementation(project(":core"))
