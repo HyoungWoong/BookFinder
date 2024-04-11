@@ -74,17 +74,28 @@ class SearchFragment : Fragment() {
             setContent {
                 val list = viewModel.itemList.collectAsState(initial = emptyList())
                 BookFinderTheme {
-                    SearchScreen(list.value)
+                    SearchScreen(
+                        list.value,
+                        { viewModel.onTextChanges(it) },
+                        { checked, image ->
+                            if (checked) viewModel.addFavorite(image)
+                            else viewModel.removeFavorite(image)
+                        }
+                    )
                 }
             }
         }
     }
 
     @Composable
-    fun SearchScreen(list: List<ItemHolder>) {
+    fun SearchScreen(
+        list: List<ItemHolder>,
+        onTextChanges: (String) -> Unit,
+        onCheckedChange: (Boolean, Image) -> Unit
+    ) {
         Row {
-            SearchField("") {}
-            SearchedImageList(list) {}
+            SearchField("", onTextChanges)
+            SearchedImageList(list, onCheckedChange)
         }
     }
 
@@ -143,7 +154,7 @@ class SearchFragment : Fragment() {
     @Composable
     fun SearchedImageList(
         list: List<ItemHolder>,
-        onCheckedChange: (Boolean) -> Unit,
+        onCheckedChange: (Boolean, Image) -> Unit,
     ) {
         Box(
             modifier = Modifier
@@ -170,7 +181,7 @@ class SearchFragment : Fragment() {
     @Composable
     fun SearchedImage(
         itemHolder: ItemHolder,
-        onCheckedChange: (Boolean) -> Unit
+        onCheckedChange: (Boolean, Image) -> Unit
     ) {
         Box(
             modifier = Modifier
@@ -207,7 +218,7 @@ class SearchFragment : Fragment() {
                 modifier = Modifier
                     .size(48.dp, 48.dp)
                     .selectable(itemHolder.isFavorite) {
-                        onCheckedChange(!itemHolder.isFavorite)
+                        onCheckedChange(!itemHolder.isFavorite, itemHolder.image)
                     }
                     .align(Alignment.BottomEnd)
                     .padding(end = 8.dp, bottom = 8.dp)
@@ -222,7 +233,7 @@ class SearchFragment : Fragment() {
     @Composable
     fun PreviewSearchField() {
         BookFinderTheme {
-            SearchScreen(emptyList())
+            SearchScreen(emptyList(), {}, { _, _ -> })
         }
     }
 
@@ -236,8 +247,9 @@ class SearchFragment : Fragment() {
             SearchedImage(
                 ItemHolder(
                     Image("https://developer.android.com/static/develop/ui/compose/images/lists-photogrid.png"),
-                    false
-                ), {}
+                    false,
+                ),
+                { _, _ -> }
             )
         }
     }
