@@ -19,7 +19,9 @@ class CachePreference(
             valueCache[getCacheKey(domainName, key)] as? T
                 ?: run {
                     val delegateValue = delegate.getValue<T>(domainName, key, type)
-                    valueCache.put(getCacheKey(domainName, key), delegateValue)
+                    if(delegateValue != null) {
+                        valueCache.put(getCacheKey(domainName, key), delegateValue)
+                    }
                     delegateValue
                 }
         }
