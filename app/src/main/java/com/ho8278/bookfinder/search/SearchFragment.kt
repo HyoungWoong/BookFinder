@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
@@ -180,7 +181,7 @@ class SearchFragment : Fragment() {
         ) {
             AsyncImage(
                 model = itemHolder.image,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.cd_searched_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(),
@@ -194,9 +195,15 @@ class SearchFragment : Fragment() {
             } else {
                 Icons.Default.FavoriteBorder
             }
+
+            val favoriteDescriptionRes = if (itemHolder.isFavorite) {
+                R.string.cd_remove_favorite_icon
+            } else {
+                R.string.cd_set_favorite_icon
+            }
             Icon(
                 checkButtonIcon,
-                null,
+                stringResource(favoriteDescriptionRes),
                 modifier = Modifier
                     .size(48.dp, 48.dp)
                     .selectable(itemHolder.isFavorite) {

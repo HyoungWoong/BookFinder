@@ -2,4 +2,8 @@
     <string name="app_name">BookFinder</string>
     <string name="fragment_search">Search</string>
     <string name="fragment_favorite">Favorite</string>
+
+    <string name="cd_searched_image">검색된 이미지</string>
+    <string name="cd_set_favorite_icon">사진 즐겨찾기 등록</string>
+    <string name="cd_remove_favorite_icon">사진 즐겨찾기 해제</string>
 </resources>
