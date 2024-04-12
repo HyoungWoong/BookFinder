@@ -5,11 +5,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,10 +31,15 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -41,7 +49,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
 import com.ho8278.bookfinder.R
 import com.ho8278.bookfinder.common.ItemHolder
 import com.ho8278.bookfinder.common.theme.BookFinderTheme
@@ -164,11 +173,11 @@ class SearchFragment : Fragment() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
                 .padding(horizontal = 8.dp)
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
@@ -191,20 +200,31 @@ class SearchFragment : Fragment() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(108.dp)
+                .height(200.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(BookFinderTheme.colorScheme.surfaceContainer)
         ) {
-            AsyncImage(
-                model = itemHolder.image,
-                contentDescription = stringResource(R.string.cd_searched_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                placeholder = painterResource(id = R.drawable.baseline_pending_24),
-                fallback = painterResource(id = R.drawable.baseline_question_mark_24),
-                contentScale = ContentScale.Fit
-            )
+            SubcomposeAsyncImage(
+                model = itemHolder.image.thumbnailUrl,
+                contentDescription = stringResource(R.string.cd_searched_image)
+            ) {
+                when (val state = painter.state) {
+                    is AsyncImagePainter.State.Loading -> {
+                        ImageLoading()
+                    }
+
+                    is AsyncImagePainter.State.Error -> {
+                        state.result.throwable.printStackTrace()
+                        ImageFallback()
+                    }
+
+                    is AsyncImagePainter.State.Success -> {
+                        ImageSuccess(state.painter)
+                    }
+
+                    is AsyncImagePainter.State.Empty -> Unit
+                }
+            }
 
             val checkButtonIcon = if (itemHolder.isFavorite) {
                 Icons.Default.Favorite
@@ -231,14 +251,58 @@ class SearchFragment : Fragment() {
         }
     }
 
-    @Preview(
-        showBackground = true,
-        uiMode = UI_MODE_NIGHT_YES
-    )
     @Composable
-    fun PreviewSearchField() {
+    fun ImageSuccess(painter:Painter) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Image(
+                modifier = Modifier.fillMaxSize(),
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
+
+    @Composable
+    fun ImageLoading() {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Image(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(64.dp),
+                painter = painterResource(id = R.drawable.baseline_pending_24),
+                contentDescription = null
+            )
+        }
+    }
+
+    @Composable
+    fun ImageFallback() {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Image(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(64.dp),
+                painter = painterResource(id = R.drawable.baseline_question_mark_24),
+                contentDescription = null
+            )
+        }
+    }
+
+    @Preview
+    @Composable
+    fun PreviewImage() {
         BookFinderTheme {
-            SearchScreen(emptyList(), {}, { _, _ -> })
+            SearchedImage(
+                itemHolder = ItemHolder(ImageData("https://i.stack.imgur.com/aakut.png"), false),
+                onCheckedChange = { _, _ -> }
+            )
         }
     }
 
@@ -247,15 +311,28 @@ class SearchFragment : Fragment() {
         uiMode = UI_MODE_NIGHT_YES
     )
     @Composable
-    fun PreviewSearchedImage() {
+    fun PreviewSearchField() {
         BookFinderTheme {
-            SearchedImage(
-                ItemHolder(
-                    Image("https://developer.android.com/static/develop/ui/compose/images/lists-photogrid.png"),
-                    false,
-                ),
-                { _, _ -> }
-            )
+            SearchScreen(list = listOf(
+                ItemHolder(ImageData("asdfasdf"), false),
+                ItemHolder(ImageData("asdfasdf1"), false),
+                ItemHolder(ImageData("asdfasdf2"), false),
+                ItemHolder(ImageData("asdfasdf3"), false),
+                ItemHolder(ImageData("asdfasdf4"), false),
+                ItemHolder(ImageData("asdfasdf5"), false),
+                ItemHolder(ImageData("asdfasdf6"), false),
+                ItemHolder(ImageData("asdfasdf7"), false),
+                ItemHolder(ImageData("asdfasdf8"), false),
+                ItemHolder(ImageData("asdfasdf9"), false),
+                ItemHolder(ImageData("asdfasdf0"), false),
+                ItemHolder(ImageData("asdfasdf11"), false),
+                ItemHolder(ImageData("asdfasdf12"), false),
+                ItemHolder(ImageData("asdfasdf13"), false),
+                ItemHolder(ImageData("asdfasdf14"), false),
+                ItemHolder(ImageData("asdfasdf15"), false),
+                ItemHolder(ImageData("asdfasdf17"), false),
+                ItemHolder(ImageData("asdfasdf19"), false),
+            ), onTextChanges = {}, onCheckedChange = { _, _ -> })
         }
     }
 
