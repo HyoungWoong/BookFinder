@@ -56,7 +56,7 @@ class RepositoryTest {
     }
 
     @Test
-    fun `검색 쿼리로 마블 캐릭터를 검색할 수 있다`(): Unit = runBlocking {
+    fun `검색 쿼리로 이미지를 검색할 수 있다`(): Unit = runBlocking {
         val searchResult = repository.searchImages("iron", 1)
 
         assert(searchResult.total != 0)
