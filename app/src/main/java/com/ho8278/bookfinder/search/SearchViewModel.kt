@@ -11,7 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.mapLatest
@@ -39,18 +38,20 @@ class SearchViewModel @Inject constructor(
     }
 
     private val isLoadingLocal = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = isLoadingLocal
 
     fun init() {
         if (isInitialize) return
         isInitialize = true
 
         viewModelScope.launch {
-            searchText
-                .debounce(DEBOUNCE_TIMEOUT)
+            searchText.debounce(DEBOUNCE_TIMEOUT)
                 .mapLatest {
                     isLoadingLocal.emit(true)
-                    val result = imageRepository.searchImages(it, DEFAULT_QUERY_PAGE)
+                    val result = if (it.isEmpty()) {
+                        null
+                    } else {
+                        imageRepository.searchImages(it, DEFAULT_QUERY_PAGE)
+                    }
                     isLoadingLocal.emit(false)
                     result
                 }
