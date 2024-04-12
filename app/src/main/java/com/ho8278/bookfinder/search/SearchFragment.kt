@@ -118,7 +118,7 @@ class SearchFragment : Fragment() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .background(BookFinderTheme.colorScheme.primaryContainer)
+                .background(BookFinderTheme.colorScheme.background)
         ) {
             Text(
                 text = title,
