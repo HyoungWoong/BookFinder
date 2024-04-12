@@ -269,7 +269,7 @@ class SearchFragment : Fragment() {
             Image(
                 modifier = Modifier.fillMaxSize(),
                 painter = painter,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.cd_searched_image),
                 contentScale = ContentScale.Crop
             )
         }
