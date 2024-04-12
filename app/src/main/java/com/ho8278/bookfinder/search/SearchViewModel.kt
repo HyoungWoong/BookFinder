@@ -11,8 +11,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,13 +30,17 @@ class SearchViewModel @Inject constructor(
     private val searchResult = MutableStateFlow<SearchResult?>(null)
     val searchText = MutableStateFlow("")
 
-    val itemList: Flow<List<ItemHolder>> = searchResult.combine(
+    val uiState = searchResult.combine(
         imageRepository.favoriteChanges()
     ) { search, favorites ->
-        search?.results?.map {
+        val itemList = search?.results?.map {
             val isFavorite = favorites.contains(it)
             ItemHolder(it, isFavorite)
         } ?: emptyList()
+
+        val isEnd = search?.isEnd ?: true
+
+        SearchUiState(itemList, isEnd)
     }
 
     private val isLoadingLocal = MutableStateFlow(false)

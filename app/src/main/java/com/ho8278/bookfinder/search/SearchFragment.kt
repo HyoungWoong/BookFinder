@@ -11,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,10 +19,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -79,12 +82,14 @@ class SearchFragment : Fragment() {
             )
 
             setContent {
-                val list = viewModel.itemList.collectAsState(initial = emptyList())
+                val uiState =
+                    viewModel.uiState.collectAsState(initial = SearchUiState(emptyList(), true))
                 val initialText = viewModel.searchText.value
                 BookFinderTheme {
                     SearchScreen(
                         initialText,
-                        list.value,
+                        uiState.value.searchedList,
+                        uiState.value.isEnd,
                         { viewModel.onTextChanges(it) },
                         { checked, image ->
                             if (checked) viewModel.addFavorite(image)
@@ -101,6 +106,7 @@ class SearchFragment : Fragment() {
     fun SearchScreen(
         initialText: String,
         list: List<ItemHolder>,
+        isEnd: Boolean,
         onTextChanges: (String) -> Unit,
         onCheckedChange: (Boolean, ImageData) -> Unit,
         onLoadMore: () -> Unit,
@@ -108,7 +114,7 @@ class SearchFragment : Fragment() {
         Column {
             Title(stringResource(id = R.string.fragment_search))
             SearchField(initialText, onTextChanges)
-            SearchedImageList(list, onCheckedChange, onLoadMore)
+            SearchedImageList(list, isEnd, onCheckedChange, onLoadMore)
         }
     }
 
@@ -191,6 +197,7 @@ class SearchFragment : Fragment() {
     @Composable
     fun SearchedImageList(
         list: List<ItemHolder>,
+        isEnd: Boolean,
         onCheckedChange: (Boolean, ImageData) -> Unit,
         onLoadMore: () -> Unit,
     ) {
@@ -201,6 +208,7 @@ class SearchFragment : Fragment() {
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(bottom = 8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(),
@@ -216,6 +224,20 @@ class SearchFragment : Fragment() {
                     }
                     val itemHolder = list[position]
                     SearchedImage(itemHolder, onCheckedChange)
+                }
+
+                if (!isEnd) {
+                    item(span = { GridItemSpan(2) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -352,26 +374,14 @@ class SearchFragment : Fragment() {
         BookFinderTheme {
             SearchScreen(
                 "",
+                isEnd = true,
                 list = listOf(
-                ItemHolder(ImageData("asdfasdf"), false),
-                ItemHolder(ImageData("asdfasdf1"), false),
-                ItemHolder(ImageData("asdfasdf2"), false),
-                ItemHolder(ImageData("asdfasdf3"), false),
-                ItemHolder(ImageData("asdfasdf4"), false),
-                ItemHolder(ImageData("asdfasdf5"), false),
-                ItemHolder(ImageData("asdfasdf6"), false),
-                ItemHolder(ImageData("asdfasdf7"), false),
-                ItemHolder(ImageData("asdfasdf8"), false),
-                ItemHolder(ImageData("asdfasdf9"), false),
-                ItemHolder(ImageData("asdfasdf0"), false),
-                ItemHolder(ImageData("asdfasdf11"), false),
-                ItemHolder(ImageData("asdfasdf12"), false),
-                ItemHolder(ImageData("asdfasdf13"), false),
-                ItemHolder(ImageData("asdfasdf14"), false),
-                ItemHolder(ImageData("asdfasdf15"), false),
-                ItemHolder(ImageData("asdfasdf17"), false),
-                ItemHolder(ImageData("asdfasdf19"), false),
-            ), onTextChanges = {}, onCheckedChange = { _, _ -> }, {})
+                    ItemHolder(ImageData("asdfasdf"), false),
+                    ItemHolder(ImageData("asdfasdf1"), false),
+                    ItemHolder(ImageData("asdfasdf2"), false),
+                    ItemHolder(ImageData("asdfasdf3"), false),
+                    ItemHolder(ImageData("asdfasdf4"), false),
+                ), onTextChanges = {}, onCheckedChange = { _, _ -> }, onLoadMore = {})
         }
     }
 
