@@ -11,7 +11,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,9 +22,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -205,39 +201,43 @@ class SearchFragment : Fragment() {
         itemHolder: ItemHolder,
         onCheckedChange: (Boolean, ImageData) -> Unit
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(BookFinderTheme.colorScheme.surfaceContainer)
         ) {
-            SubcomposeAsyncImage(
-                model = itemHolder.image.thumbnailUrl,
-                contentDescription = stringResource(R.string.cd_searched_image)
+            Box(
+                modifier = Modifier.weight(1f)
             ) {
-                when (val state = painter.state) {
-                    is AsyncImagePainter.State.Loading -> {
-                        ImageLoading()
-                    }
+                SubcomposeAsyncImage(
+                    model = itemHolder.image.thumbnailUrl,
+                    contentDescription = stringResource(R.string.cd_searched_image)
+                ) {
+                    when (val state = painter.state) {
+                        is AsyncImagePainter.State.Loading -> {
+                            ImageLoading()
+                        }
 
-                    is AsyncImagePainter.State.Error -> {
-                        state.result.throwable.printStackTrace()
-                        ImageFallback()
-                    }
+                        is AsyncImagePainter.State.Error -> {
+                            state.result.throwable.printStackTrace()
+                            ImageFallback()
+                        }
 
-                    is AsyncImagePainter.State.Success -> {
-                        ImageSuccess(state.painter)
-                    }
+                        is AsyncImagePainter.State.Success -> {
+                            ImageSuccess(state.painter)
+                        }
 
-                    is AsyncImagePainter.State.Empty -> Unit
+                        is AsyncImagePainter.State.Empty -> Unit
+                    }
                 }
             }
 
             val checkButtonIcon = if (itemHolder.isFavorite) {
-                Icons.Default.Favorite
+                painterResource(id = R.drawable.baseline_favorite_24)
             } else {
-                Icons.Default.FavoriteBorder
+                painterResource(id = R.drawable.baseline_favorite_border_24)
             }
 
             val favoriteDescriptionRes = if (itemHolder.isFavorite) {
@@ -245,6 +245,7 @@ class SearchFragment : Fragment() {
             } else {
                 R.string.cd_set_favorite_icon
             }
+
             Icon(
                 checkButtonIcon,
                 stringResource(favoriteDescriptionRes),
@@ -253,8 +254,9 @@ class SearchFragment : Fragment() {
                     .selectable(itemHolder.isFavorite) {
                         onCheckedChange(!itemHolder.isFavorite, itemHolder.image)
                     }
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 8.dp, bottom = 8.dp)
+                    .align(Alignment.End)
+                    .padding(end = 8.dp, bottom = 8.dp),
+                tint = BookFinderTheme.colorScheme.onSurface
             )
         }
     }
@@ -268,7 +270,7 @@ class SearchFragment : Fragment() {
                 modifier = Modifier.fillMaxSize(),
                 painter = painter,
                 contentDescription = null,
-                contentScale = ContentScale.Fit
+                contentScale = ContentScale.Crop
             )
         }
     }
@@ -278,12 +280,13 @@ class SearchFragment : Fragment() {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            Image(
+            Icon(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(64.dp),
                 painter = painterResource(id = R.drawable.baseline_pending_24),
-                contentDescription = null
+                contentDescription = null,
+                tint = BookFinderTheme.colorScheme.onSurface
             )
         }
     }
@@ -293,12 +296,13 @@ class SearchFragment : Fragment() {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            Image(
+            Icon(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(64.dp),
                 painter = painterResource(id = R.drawable.baseline_question_mark_24),
-                contentDescription = null
+                contentDescription = null,
+                tint = BookFinderTheme.colorScheme.onSurface
             )
         }
     }
