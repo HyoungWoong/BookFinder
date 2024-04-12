@@ -45,8 +45,8 @@ import coil.compose.AsyncImage
 import com.ho8278.bookfinder.R
 import com.ho8278.bookfinder.common.ItemHolder
 import com.ho8278.bookfinder.common.theme.BookFinderTheme
-import com.ho8278.data.model.Image
 import dagger.hilt.android.AndroidEntryPoint
+import com.ho8278.data.model.Image as ImageData
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -91,7 +91,7 @@ class SearchFragment : Fragment() {
     fun SearchScreen(
         list: List<ItemHolder>,
         onTextChanges: (String) -> Unit,
-        onCheckedChange: (Boolean, Image) -> Unit
+        onCheckedChange: (Boolean, ImageData) -> Unit
     ) {
         Row {
             SearchField("", onTextChanges)
@@ -154,7 +154,7 @@ class SearchFragment : Fragment() {
     @Composable
     fun SearchedImageList(
         list: List<ItemHolder>,
-        onCheckedChange: (Boolean, Image) -> Unit,
+        onCheckedChange: (Boolean, ImageData) -> Unit,
     ) {
         Box(
             modifier = Modifier
@@ -181,7 +181,7 @@ class SearchFragment : Fragment() {
     @Composable
     fun SearchedImage(
         itemHolder: ItemHolder,
-        onCheckedChange: (Boolean, Image) -> Unit
+        onCheckedChange: (Boolean, ImageData) -> Unit
     ) {
         Box(
             modifier = Modifier
