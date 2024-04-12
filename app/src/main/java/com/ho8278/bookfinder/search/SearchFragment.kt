@@ -93,7 +93,7 @@ class SearchFragment : Fragment() {
         onTextChanges: (String) -> Unit,
         onCheckedChange: (Boolean, ImageData) -> Unit
     ) {
-        Row {
+        Column {
             SearchField("", onTextChanges)
             SearchedImageList(list, onCheckedChange)
         }
@@ -118,6 +118,8 @@ class SearchFragment : Fragment() {
         onTextChanges: (String) -> Unit,
         cornerSize: CornerSize
     ) {
+        var text by remember { mutableStateOf(initialText) }
+
         val backgroundShape = RoundedCornerShape(cornerSize)
         val textFieldColor = TextFieldDefaults.colors(
             disabledContainerColor = BookFinderTheme.colorScheme.background,
@@ -140,10 +142,13 @@ class SearchFragment : Fragment() {
                 .clip(backgroundShape)
         ) {
             TextField(
-                initialText,
+                text,
                 modifier = Modifier
                     .fillMaxWidth(),
-                onValueChange = onTextChanges,
+                onValueChange = {
+                    text = it
+                    onTextChanges(text)
+                },
                 maxLines = 1,
                 shape = backgroundShape,
                 colors = textFieldColor
