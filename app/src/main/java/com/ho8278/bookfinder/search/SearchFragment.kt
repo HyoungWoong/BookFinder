@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -89,7 +88,8 @@ class SearchFragment : Fragment() {
                         { checked, image ->
                             if (checked) viewModel.addFavorite(image)
                             else viewModel.removeFavorite(image)
-                        }
+                        },
+                        { viewModel.loadMore() },
                     )
                 }
             }
@@ -100,11 +100,12 @@ class SearchFragment : Fragment() {
     fun SearchScreen(
         list: List<ItemHolder>,
         onTextChanges: (String) -> Unit,
-        onCheckedChange: (Boolean, ImageData) -> Unit
+        onCheckedChange: (Boolean, ImageData) -> Unit,
+        onLoadMore: () -> Unit,
     ) {
         Column {
             SearchField("", onTextChanges)
-            SearchedImageList(list, onCheckedChange)
+            SearchedImageList(list, onCheckedChange, onLoadMore)
         }
     }
 
@@ -169,6 +170,7 @@ class SearchFragment : Fragment() {
     fun SearchedImageList(
         list: List<ItemHolder>,
         onCheckedChange: (Boolean, ImageData) -> Unit,
+        onLoadMore: () -> Unit,
     ) {
         Box(
             modifier = Modifier
@@ -183,10 +185,14 @@ class SearchFragment : Fragment() {
                     .fillMaxHeight()
             ) {
                 items(
-                    list,
-                    { it.image.thumbnailUrl }
-                ) {
-                    SearchedImage(it, onCheckedChange)
+                    list.size,
+                    { list[it].image.thumbnailUrl }
+                ) { position ->
+                    if (position == list.size - 1) {
+                        onLoadMore()
+                    }
+                    val itemHolder = list[position]
+                    SearchedImage(itemHolder, onCheckedChange)
                 }
             }
         }
@@ -332,7 +338,7 @@ class SearchFragment : Fragment() {
                 ItemHolder(ImageData("asdfasdf15"), false),
                 ItemHolder(ImageData("asdfasdf17"), false),
                 ItemHolder(ImageData("asdfasdf19"), false),
-            ), onTextChanges = {}, onCheckedChange = { _, _ -> })
+            ), onTextChanges = {}, onCheckedChange = { _, _ -> }, {})
         }
     }
 
