@@ -23,6 +23,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
@@ -101,8 +103,28 @@ class SearchFragment : Fragment() {
         onLoadMore: () -> Unit,
     ) {
         Column {
+            Title(stringResource(id = R.string.fragment_search))
             SearchField("", onTextChanges)
             SearchedImageList(list, onCheckedChange, onLoadMore)
+        }
+    }
+
+    @Composable
+    fun Title(title: String) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(BookFinderTheme.colorScheme.primaryContainer)
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 16.dp),
+                color = BookFinderTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 
