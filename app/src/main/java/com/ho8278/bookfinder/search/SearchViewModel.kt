@@ -26,7 +26,7 @@ class SearchViewModel @Inject constructor(
     private var isInitialize = false
 
     private val searchResult = MutableStateFlow<SearchResult?>(null)
-    private val searchText = MutableStateFlow("")
+    val searchText = MutableStateFlow("")
 
     val itemList: Flow<List<ItemHolder>> = searchResult.combine(
         imageRepository.favoriteChanges()

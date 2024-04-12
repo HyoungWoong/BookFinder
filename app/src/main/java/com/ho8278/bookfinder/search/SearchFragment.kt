@@ -80,8 +80,10 @@ class SearchFragment : Fragment() {
 
             setContent {
                 val list = viewModel.itemList.collectAsState(initial = emptyList())
+                val initialText = viewModel.searchText.value
                 BookFinderTheme {
                     SearchScreen(
+                        initialText,
                         list.value,
                         { viewModel.onTextChanges(it) },
                         { checked, image ->
@@ -97,6 +99,7 @@ class SearchFragment : Fragment() {
 
     @Composable
     fun SearchScreen(
+        initialText: String,
         list: List<ItemHolder>,
         onTextChanges: (String) -> Unit,
         onCheckedChange: (Boolean, ImageData) -> Unit,
@@ -104,7 +107,7 @@ class SearchFragment : Fragment() {
     ) {
         Column {
             Title(stringResource(id = R.string.fragment_search))
-            SearchField("", onTextChanges)
+            SearchField(initialText, onTextChanges)
             SearchedImageList(list, onCheckedChange, onLoadMore)
         }
     }
@@ -347,7 +350,9 @@ class SearchFragment : Fragment() {
     @Composable
     fun PreviewSearchField() {
         BookFinderTheme {
-            SearchScreen(list = listOf(
+            SearchScreen(
+                "",
+                list = listOf(
                 ItemHolder(ImageData("asdfasdf"), false),
                 ItemHolder(ImageData("asdfasdf1"), false),
                 ItemHolder(ImageData("asdfasdf2"), false),
