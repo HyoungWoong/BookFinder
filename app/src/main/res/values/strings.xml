@@ -10,4 +10,9 @@
     <string name="cd_image_fallback">이미지 로드 실패</string>
 
     <string name="network_error_message">잠시 후 다시 시도해 주세요.</string>
+
+    <string name="favorite_remove_on">삭제하기</string>
+    <string name="favorite_remove_cancel">취소하기</string>
+
+    <string name="confirm">확인</string>
 </resources>
