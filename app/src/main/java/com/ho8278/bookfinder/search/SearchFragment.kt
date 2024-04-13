@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,12 +51,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.flowWithLifecycle
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import com.ho8278.bookfinder.R
 import com.ho8278.bookfinder.common.ItemHolder
+import com.ho8278.bookfinder.common.ToastSignal
 import com.ho8278.bookfinder.common.theme.BookFinderTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import com.ho8278.data.model.Image as ImageData
 
 @AndroidEntryPoint
@@ -81,14 +88,26 @@ class SearchFragment : Fragment() {
             )
 
             setContent {
-                val uiState = viewModel.uiState.collectAsState(
-                    initial = SearchUiState(
+                val lifecycleOwner = LocalLifecycleOwner.current
+                val uiState = viewModel.uiState.collectAsStateWithLifecycle(
+                    initialValue = SearchUiState(
                         emptyList(),
                         isLoading = false,
                         isEnd = true
-                    )
+                    ),
+                    lifecycleOwner
                 )
+
                 val initialText = viewModel.searchText.value
+
+                SingleEvent(eventSource = viewModel.signals) {
+                    when (it) {
+                        is ToastSignal -> {
+                            Toast.makeText(requireActivity(), it.message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
                 BookFinderTheme {
                     SearchScreen(
                         initialText,
@@ -104,6 +123,17 @@ class SearchFragment : Fragment() {
                     )
                 }
             }
+        }
+    }
+
+    @Composable
+    fun <T> SingleEvent(
+        eventSource: Flow<T>,
+        collector: FlowCollector<T>,
+    ) {
+        LaunchedEffect(key1 = eventSource) {
+            eventSource.flowWithLifecycle(lifecycle)
+                .collect(collector)
         }
     }
 
@@ -402,6 +432,13 @@ class SearchFragment : Fragment() {
                     ItemHolder(ImageData("asdfasdf3"), false),
                     ItemHolder(ImageData("asdfasdf4"), false),
                 ), onTextChanges = {}, onCheckedChange = { _, _ -> }, onLoadMore = {})
+        }
+    }
+
+    @Preview
+    @Composable
+    fun PreviewAlertDialog() {
+        BookFinderTheme {
         }
     }
 

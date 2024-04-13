@@ -1,27 +1,37 @@
 package com.ho8278.bookfinder.search
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ho8278.bookfinder.R
+import com.ho8278.bookfinder.common.ToastSignal
+import com.ho8278.bookfinder.common.BaseSignal
 import com.ho8278.bookfinder.common.ItemHolder
 import com.ho8278.core.error.stable
 import com.ho8278.data.model.Image
 import com.ho8278.data.model.SearchResult
 import com.ho8278.data.repository.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.net.UnknownHostException
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val imageRepository: ImageRepository
+    private val imageRepository: ImageRepository,
+    @ApplicationContext private val applicationContext: Context
 ) : ViewModel() {
 
     private var isInitialize = false
@@ -46,7 +56,8 @@ class SearchViewModel @Inject constructor(
         SearchUiState(itemList, isLoading, isEnd)
     }
 
-    private val isLoadingLocal = MutableStateFlow(false)
+    private val signalInternal = Channel<BaseSignal>()
+    val signals: Flow<BaseSignal> = signalInternal.consumeAsFlow()
 
     fun init() {
         if (isInitialize) return
@@ -59,7 +70,25 @@ class SearchViewModel @Inject constructor(
                         null
                     } else {
                         isLoadingLocal.emit(true)
-                        val result = imageRepository.searchImages(it, DEFAULT_QUERY_PAGE)
+                        val result = withContext(Dispatchers.IO) {
+                            try {
+                                imageRepository.searchImages(it, DEFAULT_QUERY_PAGE)
+                            } catch (throwable: Throwable) {
+                                when (throwable) {
+                                    is HttpException,
+                                    is UnknownHostException -> {
+                                        val signal = ToastSignal(
+                                            applicationContext.getString(R.string.network_error_message)
+                                        )
+
+                                        signalInternal.send(signal)
+                                        null
+                                    }
+
+                                    else -> throw throwable
+                                }
+                            }
+                        }
                         isLoadingLocal.emit(false)
                         result
                     }
@@ -77,7 +106,6 @@ class SearchViewModel @Inject constructor(
 
     fun loadMore() {
         viewModelScope.launch {
-            println("Load More!")
             val isNullValue = searchResult.value == null
             val isLoadAll = searchResult.value?.isEnd ?: true
             val isQueryEmpty = searchText.value.isEmpty()
@@ -93,7 +121,23 @@ class SearchViewModel @Inject constructor(
 
             val nextPage = currentResult.page + 1
             val nextResult = withContext(Dispatchers.IO) {
-                imageRepository.searchImages(searchText.value, nextPage)
+                try {
+                    imageRepository.searchImages(searchText.value, nextPage)
+                } catch (throwable: Throwable) {
+                    when (throwable) {
+                        is HttpException,
+                        is UnknownHostException -> {
+                            val signal = ToastSignal(
+                                applicationContext.getString(R.string.network_error_message)
+                            )
+
+                            signalInternal.send(signal)
+                            currentResult
+                        }
+
+                        else -> throw throwable
+                    }
+                }
             }
 
             val loadMoreList = currentResult.results + nextResult.results

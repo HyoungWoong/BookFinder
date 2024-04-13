@@ -8,4 +8,6 @@
     <string name="cd_remove_favorite_icon">사진 즐겨찾기 해제</string>
     <string name="cd_image_loading">이미지 로딩중</string>
     <string name="cd_image_fallback">이미지 로드 실패</string>
+
+    <string name="network_error_message">잠시 후 다시 시도해 주세요.</string>
 </resources>
