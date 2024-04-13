@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,9 +38,10 @@ class FavoriteViewModel @Inject constructor(
 
         FavoriteUiState(favoriteItemHolder, isEditMode)
     }
+        .flowOn(Dispatchers.Default)
 
     fun setEditMode(editMode: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             isInEditMode.emit(editMode)
             if (editMode) {
                 selectedImage.emit(emptyList())
@@ -48,23 +50,25 @@ class FavoriteViewModel @Inject constructor(
     }
 
     fun selectImage(image: Image) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val newList = selectedImage.value + image
             selectedImage.emit(newList)
         }
     }
 
     fun unSelectImage(image: Image) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val newList = selectedImage.value - image
             selectedImage.emit(newList)
         }
     }
 
     fun confirm() {
-        viewModelScope.launch {
-            selectedImage.value.forEach {
-                imageRepository.removeFavorite(it)
+        viewModelScope.launch(Dispatchers.Default) {
+            withContext(Dispatchers.IO) {
+                selectedImage.value.forEach {
+                    imageRepository.removeFavorite(it)
+                }
             }
             setEditMode(false)
         }

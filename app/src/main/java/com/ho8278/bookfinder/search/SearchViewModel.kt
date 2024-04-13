@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -42,7 +43,8 @@ class SearchViewModel @Inject constructor(
 
     val uiState = combine(
         searchResult,
-        imageRepository.favoriteChanges(),
+        imageRepository.favoriteChanges()
+            .flowOn(Dispatchers.IO),
         isLoadingLocal,
         searchText,
     ) { search, favorites, isLoading, searchText ->
@@ -55,6 +57,7 @@ class SearchViewModel @Inject constructor(
 
         SearchUiState(searchText, itemList, isLoading, isEnd)
     }
+        .flowOn(Dispatchers.Default)
 
     private val signalInternal = Channel<BaseSignal>()
     val signals: Flow<BaseSignal> = signalInternal.receiveAsFlow()
@@ -93,19 +96,20 @@ class SearchViewModel @Inject constructor(
                         result
                     }
                 }
+                .flowOn(Dispatchers.Default)
                 .stable()
                 .collect { searchResult.emit(it) }
         }
     }
 
     fun onTextChanges(query: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             searchText.emit(query)
         }
     }
 
     fun loadMore() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val isNullValue = searchResult.value == null
             val isLoadAll = searchResult.value?.isEnd ?: true
             val isQueryEmpty = searchText.value.isEmpty()
