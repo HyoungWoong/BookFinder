@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ho8278.bookfinder.R
 import com.ho8278.bookfinder.common.BaseSignal
-import com.ho8278.bookfinder.common.ItemHolder
 import com.ho8278.bookfinder.common.ToastSignal
 import com.ho8278.core.error.stable
 import com.ho8278.data.model.Image
@@ -18,7 +17,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -50,7 +48,7 @@ class SearchViewModel @Inject constructor(
     ) { search, favorites, isLoading, searchText ->
         val itemList = search?.results?.map {
             val isFavorite = favorites.contains(it)
-            ItemHolder(it, isFavorite)
+            SearchItemHolder(it, isFavorite)
         } ?: emptyList()
 
         val isEnd = search?.isEnd ?: true

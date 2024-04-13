@@ -41,7 +41,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import com.ho8278.bookfinder.R
-import com.ho8278.bookfinder.common.ItemHolder
 import com.ho8278.bookfinder.common.ToastSignal
 import com.ho8278.bookfinder.common.theme.BookFinderTheme
 import com.ho8278.bookfinder.common.ui.ImageFallback
@@ -150,7 +149,7 @@ class SearchFragment : Fragment() {
 
     @Composable
     fun SearchedImageList(
-        list: List<ItemHolder>,
+        list: List<SearchItemHolder>,
         isEnd: Boolean,
         isLoading: Boolean,
         onCheckedChange: (Boolean, ImageData) -> Unit,
@@ -212,7 +211,7 @@ class SearchFragment : Fragment() {
 
     @Composable
     fun SearchedImage(
-        itemHolder: ItemHolder,
+        searchItemHolder: SearchItemHolder,
         onCheckedChange: (Boolean, Image) -> Unit
     ) {
         Column(
@@ -226,7 +225,7 @@ class SearchFragment : Fragment() {
                 modifier = Modifier.weight(1f)
             ) {
                 SubcomposeAsyncImage(
-                    model = itemHolder.image.thumbnailUrl,
+                    model = searchItemHolder.image.thumbnailUrl,
                     contentDescription = stringResource(R.string.cd_searched_image)
                 ) {
                     when (val state = painter.state) {
@@ -248,13 +247,13 @@ class SearchFragment : Fragment() {
                 }
             }
 
-            val checkButtonIcon = if (itemHolder.isFavorite) {
+            val checkButtonIcon = if (searchItemHolder.isFavorite) {
                 painterResource(id = R.drawable.baseline_favorite_24)
             } else {
                 painterResource(id = R.drawable.baseline_favorite_border_24)
             }
 
-            val favoriteDescriptionRes = if (itemHolder.isFavorite) {
+            val favoriteDescriptionRes = if (searchItemHolder.isFavorite) {
                 R.string.cd_remove_favorite_icon
             } else {
                 R.string.cd_set_favorite_icon
@@ -265,8 +264,8 @@ class SearchFragment : Fragment() {
                 stringResource(favoriteDescriptionRes),
                 modifier = Modifier
                     .size(48.dp, 48.dp)
-                    .selectable(itemHolder.isFavorite) {
-                        onCheckedChange(!itemHolder.isFavorite, itemHolder.image)
+                    .selectable(searchItemHolder.isFavorite) {
+                        onCheckedChange(!searchItemHolder.isFavorite, searchItemHolder.image)
                     }
                     .align(Alignment.End)
                     .padding(end = 8.dp, bottom = 8.dp),
@@ -280,7 +279,7 @@ class SearchFragment : Fragment() {
     fun PreviewImage() {
         BookFinderTheme {
             SearchedImage(
-                itemHolder = ItemHolder(ImageData("https://i.stack.imgur.com/aakut.png"), false),
+                searchItemHolder = SearchItemHolder(ImageData("https://i.stack.imgur.com/aakut.png"), false),
                 onCheckedChange = { _, _ -> }
             )
         }
@@ -299,11 +298,11 @@ class SearchFragment : Fragment() {
                     isEnd = true,
                     isLoading = true,
                     searchedList = listOf(
-                        ItemHolder(ImageData("asdfasdf"), false),
-                        ItemHolder(ImageData("asdfasdf1"), false),
-                        ItemHolder(ImageData("asdfasdf2"), false),
-                        ItemHolder(ImageData("asdfasdf3"), false),
-                        ItemHolder(ImageData("asdfasdf4"), false),
+                        SearchItemHolder(ImageData("asdfasdf"), false),
+                        SearchItemHolder(ImageData("asdfasdf1"), false),
+                        SearchItemHolder(ImageData("asdfasdf2"), false),
+                        SearchItemHolder(ImageData("asdfasdf3"), false),
+                        SearchItemHolder(ImageData("asdfasdf4"), false),
                     )
                 ), onTextChanges = {}, onCheckedChange = { _, _ -> }, onLoadMore = {})
         }
