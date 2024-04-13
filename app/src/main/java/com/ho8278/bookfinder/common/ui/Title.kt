@@ -41,5 +41,3 @@ fun Title(
         menuContent()
     }
 }
-    }
-}

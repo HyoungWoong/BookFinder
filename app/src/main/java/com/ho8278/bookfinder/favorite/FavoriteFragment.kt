@@ -88,6 +88,11 @@ class FavoriteFragment : Fragment() {
         }
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (hidden) viewModel.setEditMode(false)
+    }
+
     @Composable
     fun FavoriteScreen(
         list: List<FavoriteItemHolder>,

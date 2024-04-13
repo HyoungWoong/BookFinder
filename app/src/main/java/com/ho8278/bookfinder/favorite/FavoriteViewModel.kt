@@ -66,6 +66,7 @@ class FavoriteViewModel @Inject constructor(
             selectedImage.value.forEach {
                 imageRepository.removeFavorite(it)
             }
+            setEditMode(false)
         }
     }
 }
