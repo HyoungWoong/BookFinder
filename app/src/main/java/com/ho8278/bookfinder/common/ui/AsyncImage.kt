@@ -40,7 +40,7 @@ fun ImageLoading() {
                 .align(Alignment.Center)
                 .size(64.dp),
             painter = painterResource(id = R.drawable.baseline_pending_24),
-            contentDescription = null,
+            contentDescription = stringResource(id = R.string.cd_image_loading),
             tint = BookFinderTheme.colorScheme.onSurface
         )
     }
@@ -56,7 +56,7 @@ fun ImageFallback() {
                 .align(Alignment.Center)
                 .size(64.dp),
             painter = painterResource(id = R.drawable.baseline_question_mark_24),
-            contentDescription = null,
+            contentDescription = stringResource(id = R.string.cd_image_fallback),
             tint = BookFinderTheme.colorScheme.onSurface
         )
     }
