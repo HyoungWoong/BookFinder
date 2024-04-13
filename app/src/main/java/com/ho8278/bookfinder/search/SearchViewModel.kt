@@ -39,7 +39,7 @@ class SearchViewModel @Inject constructor(
     private val isLoadingLocal = MutableStateFlow(false)
     private val isLoadMore = AtomicBoolean(false)
     private val searchResult = MutableStateFlow<SearchResult?>(null)
-    val searchText = MutableStateFlow("")
+    private val searchText = MutableStateFlow("")
 
     val uiState = combine(
         searchResult,

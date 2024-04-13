@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -77,16 +76,15 @@ class SearchFragment : Fragment() {
             )
 
             setContent {
-                val lifecycleOwner = LocalLifecycleOwner.current
-                val uiState = viewModel.uiState.collectAsStateWithLifecycle(
-                    initialValue = SearchUiState(
-                        "",
-                        emptyList(),
-                        isLoading = false,
-                        isEnd = true
-                    ),
-                    lifecycleOwner
-                )
+                val uiState = viewModel.uiState
+                    .collectAsStateWithLifecycle(
+                        initialValue = SearchUiState(
+                            "",
+                            emptyList(),
+                            isLoading = false,
+                            isEnd = true
+                        )
+                    )
 
                 SingleEvent(
                     eventSource = viewModel.signals,

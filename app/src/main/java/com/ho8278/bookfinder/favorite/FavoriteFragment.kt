@@ -63,9 +63,10 @@ class FavoriteFragment : Fragment() {
 
             setContent {
                 BookFinderTheme {
-                    val uiState = viewModel.uiState.collectAsStateWithLifecycle(
-                        initialValue = FavoriteUiState(emptyList(), false),
-                    )
+                    val uiState = viewModel.uiState
+                        .collectAsStateWithLifecycle(
+                            initialValue = FavoriteUiState(emptyList(), false),
+                        )
 
                     FavoriteScreen(
                         list = uiState.value.list,
