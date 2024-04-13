@@ -9,15 +9,14 @@ import com.ho8278.data.model.SearchResult
 import com.ho8278.data.repository.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,12 +26,16 @@ class SearchViewModel @Inject constructor(
 
     private var isInitialize = false
 
+    private val isLoadingLocal = MutableStateFlow(false)
+    private val isLoadMore = AtomicBoolean(false)
     private val searchResult = MutableStateFlow<SearchResult?>(null)
     val searchText = MutableStateFlow("")
 
-    val uiState = searchResult.combine(
-        imageRepository.favoriteChanges()
-    ) { search, favorites ->
+    val uiState = combine(
+        searchResult,
+        imageRepository.favoriteChanges(),
+        isLoadingLocal,
+    ) { search, favorites, isLoading ->
         val itemList = search?.results?.map {
             val isFavorite = favorites.contains(it)
             ItemHolder(it, isFavorite)
@@ -40,7 +43,7 @@ class SearchViewModel @Inject constructor(
 
         val isEnd = search?.isEnd ?: true
 
-        SearchUiState(itemList, isEnd)
+        SearchUiState(itemList, isLoading, isEnd)
     }
 
     private val isLoadingLocal = MutableStateFlow(false)
@@ -52,14 +55,14 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             searchText.debounce(DEBOUNCE_TIMEOUT)
                 .mapLatest {
-                    isLoadingLocal.emit(true)
-                    val result = if (it.isEmpty()) {
+                    if (it.isEmpty()) {
                         null
                     } else {
-                        imageRepository.searchImages(it, DEFAULT_QUERY_PAGE)
+                        isLoadingLocal.emit(true)
+                        val result = imageRepository.searchImages(it, DEFAULT_QUERY_PAGE)
+                        isLoadingLocal.emit(false)
+                        result
                     }
-                    isLoadingLocal.emit(false)
-                    result
                 }
                 .stable()
                 .collect { searchResult.emit(it) }
@@ -74,16 +77,17 @@ class SearchViewModel @Inject constructor(
 
     fun loadMore() {
         viewModelScope.launch {
+            println("Load More!")
             val isNullValue = searchResult.value == null
             val isLoadAll = searchResult.value?.isEnd ?: true
             val isQueryEmpty = searchText.value.isEmpty()
-            val isLoading = isLoadingLocal.value
+            val isLoading = isLoadMore.get()
 
             if (isNullValue || isLoadAll || isQueryEmpty || isLoading) {
                 return@launch
             }
 
-            isLoadingLocal.emit(true)
+            isLoadMore.set(true)
 
             val currentResult = searchResult.value!!
 
@@ -101,7 +105,7 @@ class SearchViewModel @Inject constructor(
             )
 
             searchResult.emit(loadMoreResult)
-            isLoadingLocal.emit(false)
+            isLoadMore.set(false)
         }
     }
 

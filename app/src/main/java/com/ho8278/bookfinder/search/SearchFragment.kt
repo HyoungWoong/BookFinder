@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -82,14 +81,20 @@ class SearchFragment : Fragment() {
             )
 
             setContent {
-                val uiState =
-                    viewModel.uiState.collectAsState(initial = SearchUiState(emptyList(), true))
+                val uiState = viewModel.uiState.collectAsState(
+                    initial = SearchUiState(
+                        emptyList(),
+                        isLoading = false,
+                        isEnd = true
+                    )
+                )
                 val initialText = viewModel.searchText.value
                 BookFinderTheme {
                     SearchScreen(
                         initialText,
                         uiState.value.searchedList,
                         uiState.value.isEnd,
+                        uiState.value.isLoading,
                         { viewModel.onTextChanges(it) },
                         { checked, image ->
                             if (checked) viewModel.addFavorite(image)
@@ -107,6 +112,7 @@ class SearchFragment : Fragment() {
         initialText: String,
         list: List<ItemHolder>,
         isEnd: Boolean,
+        isLoading: Boolean,
         onTextChanges: (String) -> Unit,
         onCheckedChange: (Boolean, ImageData) -> Unit,
         onLoadMore: () -> Unit,
@@ -114,7 +120,7 @@ class SearchFragment : Fragment() {
         Column {
             Title(stringResource(id = R.string.fragment_search))
             SearchField(initialText, onTextChanges)
-            SearchedImageList(list, isEnd, onCheckedChange, onLoadMore)
+            SearchedImageList(list, isEnd, isLoading, onCheckedChange, onLoadMore)
         }
     }
 
@@ -198,6 +204,7 @@ class SearchFragment : Fragment() {
     fun SearchedImageList(
         list: List<ItemHolder>,
         isEnd: Boolean,
+        isLoading: Boolean,
         onCheckedChange: (Boolean, ImageData) -> Unit,
         onLoadMore: () -> Unit,
     ) {
@@ -206,36 +213,48 @@ class SearchFragment : Fragment() {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(bottom = 8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(
-                    list.size,
-                    { list[it].image.thumbnailUrl }
-                ) { position ->
-                    if (position == list.size - 1) {
-                        onLoadMore()
-                    }
-                    val itemHolder = list[position]
-                    SearchedImage(itemHolder, onCheckedChange)
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(64.dp, 64.dp)
+                            .align(Alignment.Center)
+                    )
                 }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(bottom = 8.dp),
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(
+                        list.size,
+                        { list[it].image.thumbnailUrl }
+                    ) { position ->
+                        if (position == list.size - 1) {
+                            onLoadMore()
+                        }
+                        val itemHolder = list[position]
+                        SearchedImage(itemHolder, onCheckedChange)
+                    }
 
-                if (!isEnd) {
-                    item(span = { GridItemSpan(2) }) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.align(Alignment.Center)
-                            )
+                    if (!isEnd) {
+                        item(span = { GridItemSpan(2) }) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                            }
                         }
                     }
                 }
@@ -375,6 +394,7 @@ class SearchFragment : Fragment() {
             SearchScreen(
                 "",
                 isEnd = true,
+                isLoading = true,
                 list = listOf(
                     ItemHolder(ImageData("asdfasdf"), false),
                     ItemHolder(ImageData("asdfasdf1"), false),
