@@ -118,7 +118,8 @@ class FavoriteFragment : Fragment() {
                             .align(Alignment.Center)
                             .clickable { onEditModeSelect() }
                             .padding(end = 16.dp),
-                        fontSize = TextUnit(12f, TextUnitType.Sp)
+                        fontSize = TextUnit(12f, TextUnitType.Sp),
+                        color = BookFinderTheme.colorScheme.onSurface
                     )
                 }
             }

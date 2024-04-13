@@ -3,9 +3,16 @@ package com.ho8278.bookfinder.search
 import androidx.compose.runtime.Immutable
 
 @Immutable
-data class SearchUiState(
-    val searchText: String,
-    val searchedList: List<SearchItemHolder>,
-    val isLoading: Boolean,
-    val isEnd: Boolean,
-)
+sealed class SearchUiState(val searchText: String) {
+
+    class Undefined(searchText: String) : SearchUiState(searchText)
+    class Success(
+        val searchedList: List<SearchItemHolder>,
+        val isEnd: Boolean,
+        searchText: String,
+    ) : SearchUiState(searchText)
+
+    class Loading(searchText: String) : SearchUiState(searchText)
+
+    class Empty(searchText: String) : SearchUiState(searchText)
+}

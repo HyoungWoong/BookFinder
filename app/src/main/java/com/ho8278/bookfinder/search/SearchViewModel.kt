@@ -48,14 +48,20 @@ class SearchViewModel @Inject constructor(
         isLoadingLocal,
         searchText,
     ) { search, favorites, isLoading, searchText ->
-        val itemList = search?.results?.map {
-            val isFavorite = favorites.contains(it)
-            SearchItemHolder(it, isFavorite)
-        } ?: emptyList()
+        if (isLoading) {
+            return@combine SearchUiState.Loading(searchText)
+        }
 
-        val isEnd = search?.isEnd ?: true
-
-        SearchUiState(searchText, itemList, isLoading, isEnd)
+        if (search != null) {
+            val searchItemHolders = search.results.map {
+                val isFavorite = favorites.contains(it)
+                SearchItemHolder(it, isFavorite)
+            }
+            if (searchItemHolders.isEmpty()) SearchUiState.Empty(searchText)
+            else SearchUiState.Success(searchItemHolders, search.isEnd, searchText)
+        } else {
+            SearchUiState.Undefined(searchText)
+        }
     }
         .flowOn(Dispatchers.Default)
 
