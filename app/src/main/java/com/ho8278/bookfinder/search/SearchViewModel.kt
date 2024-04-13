@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ho8278.bookfinder.R
-import com.ho8278.bookfinder.common.ToastSignal
 import com.ho8278.bookfinder.common.BaseSignal
 import com.ho8278.bookfinder.common.ItemHolder
+import com.ho8278.bookfinder.common.ToastSignal
 import com.ho8278.core.error.stable
 import com.ho8278.data.model.Image
 import com.ho8278.data.model.SearchResult
@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -45,7 +46,8 @@ class SearchViewModel @Inject constructor(
         searchResult,
         imageRepository.favoriteChanges(),
         isLoadingLocal,
-    ) { search, favorites, isLoading ->
+        searchText,
+    ) { search, favorites, isLoading, searchText ->
         val itemList = search?.results?.map {
             val isFavorite = favorites.contains(it)
             ItemHolder(it, isFavorite)
@@ -53,11 +55,11 @@ class SearchViewModel @Inject constructor(
 
         val isEnd = search?.isEnd ?: true
 
-        SearchUiState(itemList, isLoading, isEnd)
+        SearchUiState(searchText, itemList, isLoading, isEnd)
     }
 
     private val signalInternal = Channel<BaseSignal>()
-    val signals: Flow<BaseSignal> = signalInternal.consumeAsFlow()
+    val signals: Flow<BaseSignal> = signalInternal.receiveAsFlow()
 
     fun init() {
         if (isInitialize) return

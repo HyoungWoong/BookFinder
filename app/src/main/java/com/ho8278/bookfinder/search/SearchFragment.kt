@@ -31,10 +31,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -91,14 +87,13 @@ class SearchFragment : Fragment() {
                 val lifecycleOwner = LocalLifecycleOwner.current
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle(
                     initialValue = SearchUiState(
+                        "",
                         emptyList(),
                         isLoading = false,
                         isEnd = true
                     ),
                     lifecycleOwner
                 )
-
-                val initialText = viewModel.searchText.value
 
                 SingleEvent(eventSource = viewModel.signals) {
                     when (it) {
@@ -110,10 +105,7 @@ class SearchFragment : Fragment() {
 
                 BookFinderTheme {
                     SearchScreen(
-                        initialText,
-                        uiState.value.searchedList,
-                        uiState.value.isEnd,
-                        uiState.value.isLoading,
+                        uiState.value,
                         { viewModel.onTextChanges(it) },
                         { checked, image ->
                             if (checked) viewModel.addFavorite(image)
@@ -139,18 +131,21 @@ class SearchFragment : Fragment() {
 
     @Composable
     fun SearchScreen(
-        initialText: String,
-        list: List<ItemHolder>,
-        isEnd: Boolean,
-        isLoading: Boolean,
+        uiState: SearchUiState,
         onTextChanges: (String) -> Unit,
         onCheckedChange: (Boolean, ImageData) -> Unit,
         onLoadMore: () -> Unit,
     ) {
         Column {
             Title(stringResource(id = R.string.fragment_search))
-            SearchField(initialText, onTextChanges)
-            SearchedImageList(list, isEnd, isLoading, onCheckedChange, onLoadMore)
+            SearchField(uiState.searchText, onTextChanges)
+            SearchedImageList(
+                uiState.searchedList,
+                uiState.isEnd,
+                uiState.isLoading,
+                onCheckedChange,
+                onLoadMore
+            )
         }
     }
 
@@ -174,12 +169,12 @@ class SearchFragment : Fragment() {
     }
 
     @Composable
-    fun SearchField(initialText: String, onTextChanges: (String) -> Unit) {
+    fun SearchField(text: String, onTextChanges: (String) -> Unit) {
         Box(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             RoundedTextField(
-                initialText = initialText,
+                text = text,
                 onTextChanges = onTextChanges,
                 cornerSize = CornerSize(4.dp)
             )
@@ -188,12 +183,10 @@ class SearchFragment : Fragment() {
 
     @Composable
     fun RoundedTextField(
-        initialText: String,
+        text: String,
         onTextChanges: (String) -> Unit,
         cornerSize: CornerSize
     ) {
-        var text by remember { mutableStateOf(initialText) }
-
         val backgroundShape = RoundedCornerShape(cornerSize)
         val textFieldColor = TextFieldDefaults.colors(
             disabledContainerColor = BookFinderTheme.colorScheme.background,
@@ -220,8 +213,7 @@ class SearchFragment : Fragment() {
                 modifier = Modifier
                     .fillMaxWidth(),
                 onValueChange = {
-                    text = it
-                    onTextChanges(text)
+                    onTextChanges(it)
                 },
                 maxLines = 1,
                 shape = backgroundShape,
@@ -422,15 +414,17 @@ class SearchFragment : Fragment() {
     fun PreviewSearchField() {
         BookFinderTheme {
             SearchScreen(
-                "",
-                isEnd = true,
-                isLoading = true,
-                list = listOf(
-                    ItemHolder(ImageData("asdfasdf"), false),
-                    ItemHolder(ImageData("asdfasdf1"), false),
-                    ItemHolder(ImageData("asdfasdf2"), false),
-                    ItemHolder(ImageData("asdfasdf3"), false),
-                    ItemHolder(ImageData("asdfasdf4"), false),
+                SearchUiState(
+                    "",
+                    isEnd = true,
+                    isLoading = true,
+                    searchedList = listOf(
+                        ItemHolder(ImageData("asdfasdf"), false),
+                        ItemHolder(ImageData("asdfasdf1"), false),
+                        ItemHolder(ImageData("asdfasdf2"), false),
+                        ItemHolder(ImageData("asdfasdf3"), false),
+                        ItemHolder(ImageData("asdfasdf4"), false),
+                    )
                 ), onTextChanges = {}, onCheckedChange = { _, _ -> }, onLoadMore = {})
         }
     }
